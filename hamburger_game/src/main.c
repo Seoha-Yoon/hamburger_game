@@ -23,14 +23,15 @@ static off_t IEB_FND[MAX_FND] = {
 static int fd;
 static int map_counter = 0;
 static void * map_data[100];
-static seclection_t sel; 
+static selection_t sel;
 
 
-int main(int argc, char* argv[]) {
+
+int main() {
 	
 	int i;
 	short * led, * dot[MAX_DOT], * fnd[MAX_FND];
-	short * clcd_cmd, * clcd_data, * keypad_out, * keypad_in;
+	short * clcd_cmd, * clcd_data, * keypad_out, * keypad_in, * dots_type;
 	
 	fd = open("/dev/mem", O_RDWR|O_SYNC);
 	if (fd == -1) {
@@ -49,14 +50,15 @@ int main(int argc, char* argv[]) {
 	clcd_data = mapper(IEB_CLCD_DATA, PROT_WRITE);
 	keypad_out  = mapper(IEB_KEY_W, PROT_WRITE);
 	keypad_in = mapper(IEB_KEY_R, PROT_READ);
+	dots_type = mapper(IEB_DOT_TYPE, PROT_WRITE);
 	
 	init_led(led);
-	init_dot(dot);
+	init_dot(dot, dots_type);
 	init_fnd(fnd);
 	init_clcd(clcd_cmd, clcd_data);
 	init_keypad(keypad_out, keypad_in);
-	
-	sel.all = 0;
+
+	sel.start == 0;
 	while( logic() == TRUE ) {	}
 	
 	unmapper();
@@ -87,69 +89,57 @@ void emergency_closer() {
 	exit(EXIT_FAILURE);
 }
 
-truth_t logic() {
-	if( sel.all == 0 ) { select_mode(); }
+truth_t logic(){
+	if( sel.start == 0 ) { game_start_screen(); }
 	else if( sel.exit == 1 ) { return FALSE; }
-	else { input_mode(); }
+	else { game_mode(); }
 	return TRUE;
 }
 
-void select_mode() {
-	int i;  char buf[100];
+void game_start_screen() {
+	int i;   char buf;
 	char clcd_str[20] = "";
-	
+
 	led_clear();
 	dot_clear();
 	fnd_clear();
 	clcd_clear_display();
+
+	clcd_write_string("Welcome to       Hamburger World");
 	
 	printf("\n");
 	printf("*********** Select device **********\n");
-	printf("*   l (LED)       d (Dot Matrix)   *\n");
-	printf("*   f (FND)       c (CLCD)         *\n");
-	printf("*   a (All devices)                *\n");
-	printf("*       press 'e' to exit program  *\n");
+	printf("*       press 's' to start game    *\n");
+	printf("*       press 'e' to exit game    *\n");
 	printf("************************************\n\n");
-	scanf("%s", buf);
-	
-	for( i=0; i<strlen(buf); i++ ) {
-		if( buf[i] == 'l' ) { sel.led = 1; }
-		else if( buf[i] == 'd' ) { sel.dot  = 1; }
-		else if( buf[i] == 'f' ) { sel.fnd  = 1; }
-		else if( buf[i] == 'c' ) { sel.clcd = 1; }
-		else if( buf[i] == 'e' ) { sel.exit = 1;  break; }
-		else if( buf[i] == 'a' ) { 
-			sel.all = 0xFF;  sel.exit = 0;  break;
-		}
+	scanf("%c", &buf);
+
+	if( buf == 's' ) { 
+		game_mode();
 	}
-	
-	if( sel.led  == 1 ) { strcat(clcd_str, "LED "); }
-	if( sel.dot  == 1 ) { strcat(clcd_str, "Dot "); }
-	if( sel.fnd  == 1 ) { strcat(clcd_str, "FND "); }
-	if( sel.clcd == 1 ) { strcat(clcd_str, "CLCD"); }
-	clcd_write_string(clcd_str);
-	
+
+	if( buf == 'e'){
+		sel.exit = 1;
+	}
+
 }
 
-void input_mode() {
+void game_mode(){
 	int key_count, key_value;
 	char clcd_str[20];
-	//key_count = keypad_read(&key_value);
+	
+	clcd_clear_display();
+	clcd_write_string("HELLO");
+
 	key_count = keyboard_read(&key_value);
 	
 	if( key_count == 1 ) {
-		if( sel.led  == 1 ) { led_bit(key_value); }
-		if( sel.dot  == 1 ) { dot_write(key_value); }
-		if( sel.fnd  == 1 ) { fnd_write(key_value, 7); }
-		if( sel.clcd == 1 ) { 
-			sprintf(clcd_str, "%#04x            ", key_value);
-			clcd_set_DDRAM(0x40);
-			clcd_write_string(clcd_str);
-		}
+		
 	}
 	else if( key_count > 1 ) {
-		sel.all = 0;
+		sel.start = 0;
 	}
 	usleep(0); // simulator update
 }
+
 

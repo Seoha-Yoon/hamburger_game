@@ -9,7 +9,7 @@
 #define MAX_DOT 5
 
 
-void init_dot(short * address[]);
+void init_dot(short * address[], short* address_dot_type);
 void dot_clear();
 void dot_write(int number) ;
 
