@@ -9,7 +9,7 @@
 #include <sys/mman.h>	// mmap(), munmap()
 #include <stdlib.h> 	// exit()
 #include <string.h>		// strlen()
-
+#include <pthread.h>
 
 #include "ieb.h"
 #include "led.h"
@@ -45,6 +45,8 @@ void emergency_closer();
 truth_t logic();
 void game_start_screen();
 void game_mode();
+void setup_game();
+truth_t start_game();
 
 
 #endif

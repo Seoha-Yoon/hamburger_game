@@ -54,3 +54,26 @@ void fnd_hexa_number(unsigned long number) {
 		number = number >> 4;
 	}
 }
+
+void count_down() {
+	int i=9,j,k=9;
+	for(j=99; j>=0; j--){
+			*fnd[0] = fnd_hexadecimal[i];
+			*fnd[1] = fnd_hexadecimal[k];
+			usleep(500000);
+			i--;
+			if (i<0) {
+				i=9;
+				k--;
+				*fnd[1] = fnd_hexadecimal[k];
+				if (k<0) {
+					*fnd[0] = fnd_hexadecimal[0];
+					*fnd[1] = fnd_hexadecimal[0];
+				}
+			}
+	}
+}
+
+void life_count(int n) {
+	*fnd[7] = fnd_hexadecimal[n];
+}

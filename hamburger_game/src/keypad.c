@@ -6,7 +6,7 @@
 
 static short * keypad_out, * keypad_in;
 
-char keyboard[4] = {'1', '2', '3', '4'};
+char keyboard[7] = {'1', '2', '3', '4', '5', 'q', 's'};
 
 void init_keypad(short * address_out, short * address_in) {
 	keypad_out  = address_out;
@@ -25,7 +25,7 @@ int keyboard_read(int * key_value){
 	}
 	else{
 		for(i=0; i<key_count; i++){
-			for(j=0; j<4; j++){
+			for(j=0; j<7; j++){
 				if(buf[i] ==keyboard[j]) *key_value = j;
 			}
 		}

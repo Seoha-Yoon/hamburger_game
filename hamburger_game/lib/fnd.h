@@ -14,6 +14,8 @@ void fnd_clear();
 void fnd_all();
 void fnd_write(int hexadecimal, int fnd_num);
 void fnd_hexa_number(unsigned long number);
+void count_down();
+void life_count(int n);
 
 
 #endif
