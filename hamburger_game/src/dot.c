@@ -43,10 +43,9 @@ void dot_write(int number) {
 	usleep(0); // for Ximulator
 }
 
-void dot_display(){
+void dot_display(int arr[5]){
 	int i, j;
-	int arr[]={0, 1, 0};
-	for(i=0; i<sizeof(arr)/sizeof(int);i++){
+	for(i=0; i<5;i++){
 		for(j =0; j<MAX_DOT; j++){
 			*dot_type = (short) arr[i];
 			*dot[j] = dot_hexadecimal[arr[i]][j];

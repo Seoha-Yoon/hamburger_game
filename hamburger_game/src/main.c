@@ -32,12 +32,14 @@ static selection_t sel;
 
 // for check answer
 int call = 6;
-int usr_input[6] = {-1, -1, -1, -1, -1, -1};
+int usr_input[6]={-1, -1, -1, -1, -1, -1};
 
-int sol[3][5] = { {0,4,0,-1, -1},
-		{0,4,1,0,-1},
-		{0,4,1,2,0}
-		};
+int sol[5][5] = {	{0,4,0,-1,-1},
+					{0,4,1,0,-1},
+					{0,4,3,0,-1},
+					{0,3,4,2,0},
+					{0,4,1,2,0}
+				};
 
 truth_t dot_corr(int inp[], int sol[]) {
 	int i;	
@@ -47,6 +49,9 @@ truth_t dot_corr(int inp[], int sol[]) {
 	return TRUE;
 }
 
+// declare life as a static variable
+static int life = 3; // default life = 3
+static int level = 1;
 
 int main() {
 	
@@ -110,6 +115,7 @@ void emergency_closer() {
 truth_t logic(){
 	if( sel.start == 0 ) { game_start_screen(); }
 	else if( sel.exit == 1 ) { return FALSE; }
+	else if( sel.game == 1 ) {game_mode(); }
 	return TRUE;
 }
 
@@ -122,7 +128,13 @@ void game_start_screen() {
 	fnd_clear();
 	clcd_clear_display();
 
-	clcd_write_string("Welcome to       Hamburger World");
+	if(life<=0){
+		clcd_write_string("GAME OVER");
+	}else if(level>=5){
+		clcd_write_string("CONGRATS! RESTART: S");
+	}else{
+		clcd_write_string("Welcome to       Hamburger World");
+	}
 	
 	printf("\n");
 	printf("*********** Select device **********\n");
@@ -141,27 +153,36 @@ void game_start_screen() {
 }
 
 void game_mode(){
-	int key_count, key_value;
-
-	setup_game();
-
-	pthread_t c_down;
-	int count_down_id = pthread_create(&c_down, NULL, count_function, NULL);
-
-	while(start_game() == TRUE ){ }
-
-	dot_clear();
-	pthread_cancel(c_down);
-	
-	key_count = keyboard_read(&key_value);
-	
-	if( key_count == 1 ) {
-		
-	}
-	else if( key_count > 1 ) {
+	if(life <= 0){
 		sel.start = 0;
+		return;
 	}
-	usleep(0); // simulator update
+
+	if(level <=5){
+		life_count(life);
+
+		// initialize usr_input
+		for(int i=0; i<6; i++){
+			usr_input[i] = -1;
+		}
+		call = 6;
+
+		setup_game();
+
+		pthread_t c_down;
+		int count_down_id = pthread_create(&c_down, NULL, count_function, NULL);
+
+		while(start_game() == TRUE ){}
+
+		dot_clear();
+		pthread_cancel(c_down);
+		fnd_clear();
+
+	}else{
+		game_start_screen();
+	}
+
+	sel.game = 1;
 }
 
 // show hamburger display
@@ -169,11 +190,10 @@ void setup_game(){
 	clcd_clear_display();
 	clcd_write_string("Ready?");
 
-	dot_display();
+	dot_display(sol[level-1]);
 
 	clcd_clear_display();
-	clcd_write_string("1.LET 2.BR       3.TMT 4.CHZ 5.PAT");
-	life_count(3);	
+	clcd_write_string("1.BR 2.LET       3.TMT 4.CHZ 5.PAT");
 }
 
 // get user input
@@ -190,13 +210,22 @@ truth_t start_game(){
 			return TRUE;
 		
 		} else {
-			if( dot_corr(usr_input, sol[0]) ) {
+			// if press 'q' end game
+			clcd_clear_display();
+			if( dot_corr(usr_input, sol[level - 1]) ) {
+				clcd_write_string("You're right!");
 				led_blink_all();
-			} else led_all();
+				level++;
+			} else{
+				clcd_write_string("You're wrong");
+				led_down_shift();
+				life--;
+			}
 			return FALSE;
 		}
 	}
 	else{
+		printf("Wrong Input");
 		return FALSE;
 	}
 }

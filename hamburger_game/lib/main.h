@@ -34,6 +34,7 @@ typedef union {
 	unsigned char start;
 	struct {
 		unsigned char exit : 1;
+		unsigned char game : 1;
 	};
 } selection_t;
 

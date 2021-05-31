@@ -56,8 +56,8 @@ void fnd_hexa_number(unsigned long number) {
 }
 
 void count_down() {
-	int i=9,j,k=9;
-	for(j=99; j>=0; j--){
+	int i=9,j,k=2;
+	for(j=29; j>=0; j--){
 			*fnd[0] = fnd_hexadecimal[i];
 			*fnd[1] = fnd_hexadecimal[k];
 			usleep(500000);
