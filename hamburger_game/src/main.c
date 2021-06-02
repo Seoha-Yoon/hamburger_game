@@ -1,4 +1,3 @@
-//-------| src/main.c |-------//
 #include "main.h"
 
 
@@ -20,19 +19,17 @@ static off_t IEB_FND[MAX_FND] = {
 	IEB_FND7
 };
 
-// for thread
-void *count_function(){
-	count_down();
-}
+
 
 static int fd;
 static int map_counter = 0;
 static void * map_data[100];
 static selection_t sel;
+static int isThreadCancel = 999;
 
 // for check answer
-int call = 6;
-int usr_input[6]={-1, -1, -1, -1, -1, -1};
+int call;
+int usr_input[5];
 
 int sol[5][5] = {	{0,4,0,-1,-1},
 					{0,4,1,0,-1},
@@ -112,18 +109,39 @@ void emergency_closer() {
 	exit(EXIT_FAILURE);
 }
 
+static truth_t enter = FALSE;
+
 truth_t logic(){
 	if( sel.start == 0 ) { game_start_screen(); }
 	else if( sel.exit == 1 ) { return FALSE; }
-	else if( sel.game == 1 ) {game_mode(); }
+	else if( sel.game == 1 ) { game_mode(); }
 	return TRUE;
+}
+
+// for thread
+static pthread_t p_thread[100];
+static int id = 0;
+void *count_function(void* i){
+	count_down();
+	if(!enter){
+		life--;
+		sel.game = 1;
+		fnd_clear();
+		dot_clear();
+		if((int)i!=0){
+			for(int j=(int)i; j>=1; j--){
+				pthread_cancel(p_thread[(int)j-1]);
+			}
+		}
+		game_mode();
+	}
+	//exit(0);
 }
 
 void game_start_screen() {
 	int i;   char buf;
-	char clcd_str[20] = "";
 
-	led_clear();
+	led_start();
 	dot_clear();
 	fnd_clear();
 	clcd_clear_display();
@@ -136,15 +154,18 @@ void game_start_screen() {
 		clcd_write_string("Welcome to       Hamburger World");
 	}
 	
+
 	printf("\n");
 	printf("*********** Select device **********\n");
 	printf("*       press 's' to start game    *\n");
-	printf("*       press 'e' to exit game    *\n");
+	printf("*       press 'e' to exit game     *\n");
 	printf("************************************\n\n");
 	scanf("%c", &buf);
 
 	if( buf == 's' ) { 
-		game_mode();
+		life = 3;
+		level = 1;
+		sel.game = 1;
 	}
 
 	if( buf == 'e'){
@@ -153,6 +174,7 @@ void game_start_screen() {
 }
 
 void game_mode(){
+
 	if(life <= 0){
 		sel.start = 0;
 		return;
@@ -162,34 +184,44 @@ void game_mode(){
 		life_count(life);
 
 		// initialize usr_input
-		for(int i=0; i<6; i++){
+		for(int i=0; i<5; i++){
 			usr_input[i] = -1;
 		}
-		call = 6;
+		call = 0;
+		enter = FALSE;
 
 		setup_game();
 
-		pthread_t c_down;
-		int count_down_id = pthread_create(&c_down, NULL, count_function, NULL);
+		int count_down_id = pthread_create(&p_thread[id], NULL, count_function, (void*)id);
+		id++;
 
-		while(start_game() == TRUE ){}
+		while(start_game() == TRUE){}
 
-		dot_clear();
-		pthread_cancel(c_down);
-		fnd_clear();
+		// user enter q & time over x
+		if(enter){
+			pthread_cancel(p_thread[id-1]);
+			fnd_clear();
+			dot_clear();
+			sel.game = 1;
+		}
+		return;
 
 	}else{
-		game_start_screen();
+		sel.start = 0;
+		return;
+		
 	}
-
-	sel.game = 1;
+	
 }
 
 // show hamburger display
 void setup_game(){
+	led_up_shift(level);
 	clcd_clear_display();
 	clcd_write_string("Ready?");
-
+	usleep(1000000);
+	clcd_clear_display();
+	clcd_write_string("Go!");
 	dot_display(sol[level-1]);
 
 	clcd_clear_display();
@@ -198,37 +230,45 @@ void setup_game(){
 
 // get user input
 truth_t start_game(){
+		int key_count, key_value;
+		key_count = keyboard_read(&key_value);
 	
-	int key_count, key_value;
-	key_count = keyboard_read(&key_value);
-
-	if( key_count == 1 && call < 7) {
-		if (key_value != 5) {
-			usr_input[6-call] = key_value;
-			dot_write(key_value);
-			call-=1;
-			return TRUE;
+		if( key_count == 1 && call <= 5 && (key_value == 0 || key_value == 1 || key_value == 2 || key_value == 3 || key_value == 4 || key_value == 5)) {
+			if (key_value != 5) {
+				usr_input[call] = key_value;
+				dot_write(key_value);
+				call+=1;
+				return TRUE;
 		
-		} else {
-			// if press 'q' end game
-			clcd_clear_display();
-			if( dot_corr(usr_input, sol[level - 1]) ) {
-				clcd_write_string("You're right!");
-				led_blink_all();
-				level++;
-			} else{
-				clcd_write_string("You're wrong");
-				led_down_shift();
-				life--;
+			} else {
+				// if press 'q' end game
+				enter =TRUE;
+				clcd_clear_display();
+				if( dot_corr(usr_input, sol[level - 1]) ) {
+					clcd_write_string("You're right!       LEVEL UP");
+					level++;
+					usleep(1000000);
+				
+				} else{
+					clcd_write_string("You're wrong");
+					life--;
+					usleep(1000000);
+				}
+				return FALSE;
 			}
+		}
+		else if(call > 5) {
+			clcd_clear_display();
+			clcd_write_string("You're wrong");
+			life--;
+			usleep(1000000);
 			return FALSE;
 		}
-	}
-	else{
-		printf("Wrong Input");
-		return FALSE;
-	}
+		else{
+			clcd_clear_display();
+			clcd_write_string("Wrong input");
+			usleep(1000000);
+			return FALSE;
+		}
+	
 }
-
-
-

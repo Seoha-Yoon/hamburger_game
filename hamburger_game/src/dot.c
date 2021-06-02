@@ -50,32 +50,7 @@ void dot_display(int arr[5]){
 			*dot_type = (short) arr[i];
 			*dot[j] = dot_hexadecimal[arr[i]][j];
 		}
-		usleep(500000);
+		usleep(1000000);
 	}
 	dot_clear();
-}
-
-void dot_stack(int n[], int call) {
-	int i, j;
-	int shift;
-	
-	for (j=0; n[j]>= 0; j++){
-		for(shift = 0; shift <= call; shift++){
-			for(i=0; i<MAX_DOT; i++){
-				*dot[i] = dot_hexadecimal[n[j]+5][i] >> shift;
-			}
-		}
-	}
-	
-}
-
-void dot_down_shift(int number, int call, int n[]) { 
-	int shift, i;
-	dot_write(number+5); 
-	for(shift = 0; shift <= call; shift++) {
-		for(i=0; i<MAX_DOT; i++){
- 			*dot[i] = dot_hexadecimal[number+5][i]>>shift ;
- 		}
-	usleep(50000);
-	}		 
 }

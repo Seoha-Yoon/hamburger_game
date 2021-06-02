@@ -55,6 +55,11 @@ void fnd_hexa_number(unsigned long number) {
 	}
 }
 
+int fnd_check(){
+	if(*fnd[0] ==0 && *fnd[1]==0) return 1;
+	else return 0;
+}
+
 void count_down() {
 	int i=9,j,k=2;
 	for(j=29; j>=0; j--){

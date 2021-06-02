@@ -1,4 +1,3 @@
-//-------| src/led.c |-------//
 #include "led.h"
 
 static short * led;
@@ -16,13 +15,20 @@ void led_down_shift() {
 	}
 }
 
-void led_up_shift() {
+void led_up_shift(int level) {
 	
 	int i;
-	for( i=1; i<=16 ; i++ ) {
-		*led = (short)~((unsigned long)0xFF00 >> i);
-		usleep(50000);
+	for( i=8; i<=level+8 ; i++ ) {
+		*led = (short)((unsigned long)0xFF00 >> i);
 	}
+	usleep(0);
+}
+
+void led_start() {
+	
+	int i;
+	*led = (short)((unsigned long)0xFF00 >> 8);
+	usleep(0);
 }
 
 void led_blink_all() {
