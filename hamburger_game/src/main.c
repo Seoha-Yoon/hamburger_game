@@ -51,13 +51,6 @@ static int level = 1;
 
 
 static truth_t enter = FALSE;
-static int id = 0;
-
-static pthread_t game_thread[100];
-
-void *game_function(){
-	game_mode();
-}
 
 // for count down thread
 static pthread_t p_thread, startgame_th;
@@ -65,10 +58,12 @@ static truth_t countEnd = FALSE;
 void *count_function(){
 	count_down();
 	life--;
+	// if count down end, stop user input
 	pthread_cancel(startgame_th);
 }
 
-void *start_function(){
+// for user input thread
+void *input_function(){
 	while(start_game()==TRUE){}
 	enter = TRUE;
 }
@@ -200,10 +195,10 @@ void game_mode(){
 		setup_game();
 
 		int count_down_id = pthread_create(&p_thread, NULL, count_function, NULL);
-		int startgame_id = pthread_create(&startgame_th, NULL, start_function, NULL);
+		int startgame_id = pthread_create(&startgame_th, NULL, input_function, NULL);
 
 		// while(start_game() == TRUE){}
-
+		// wait until user input function end
 		pthread_join(startgame_th, NULL);
 
 		// user enter q & time over x
@@ -213,6 +208,7 @@ void game_mode(){
 			dot_clear();
 			sel.game = 1;
 		}else{
+			// time over o
 			fnd_clear();
 			dot_clear();
 			clcd_clear_display();
@@ -244,6 +240,8 @@ void setup_game(){
 	clcd_write_string("1.BR 2.LET       3.TMT 4.CHZ 5.PAT");
 }
 
+
+// for check user input
 void right () {
 	clcd_clear_display();
 	clcd_write_string("You're right!       LEVEL UP");
