@@ -25,7 +25,8 @@ static int fd;
 static int map_counter = 0;
 static void * map_data[100];
 static selection_t sel;
-static int isThreadCancel = 999;
+static truth_t wait=TRUE;
+static truth_t fromLogic=FALSE;
 
 // for check answer
 int call;
@@ -49,6 +50,42 @@ truth_t dot_corr(int inp[], int sol[]) {
 // declare life as a static variable
 static int life = 3; // default life = 3
 static int level = 1;
+
+
+static truth_t enter = FALSE;
+static int id = 0;
+
+static pthread_t game_thread[100];
+
+void *game_function(){
+	game_mode();
+}
+
+// for count down thread
+static pthread_t p_thread;
+
+void *count_function(){
+	count_down();
+
+	if(!enter){
+		if(id!=0){
+			pthread_cancel(game_thread[id-1]);
+		}
+
+		life--;
+
+		if(life<=0){
+			sel.start = 0;
+			game_start_screen();
+		}else{
+			fnd_clear();
+			dot_clear();	
+			pthread_create(&game_thread[id], NULL, game_function, NULL);
+			id++;
+		}
+	}
+	//exit(0);
+}
 
 int main() {
 	
@@ -79,7 +116,8 @@ int main() {
 	init_clcd(clcd_cmd, clcd_data);
 
 	sel.start == 0;
-	while( logic() == TRUE ) {	}
+	
+	while( logic() == TRUE ) { }
 	
 	unmapper();
 	close(fd);
@@ -109,34 +147,16 @@ void emergency_closer() {
 	exit(EXIT_FAILURE);
 }
 
-static truth_t enter = FALSE;
+
+
 
 truth_t logic(){
 	if( sel.start == 0 ) { game_start_screen(); }
 	else if( sel.exit == 1 ) { return FALSE; }
-	else if( sel.game == 1 ) { game_mode(); }
+	else if( sel.game == 1 ) { game_mode();}
 	return TRUE;
 }
 
-// for thread
-static pthread_t p_thread[100];
-static int id = 0;
-void *count_function(void* i){
-	count_down();
-	if(!enter){
-		life--;
-		sel.game = 1;
-		fnd_clear();
-		dot_clear();
-		if((int)i!=0){
-			for(int j=(int)i; j>=1; j--){
-				pthread_cancel(p_thread[(int)j-1]);
-			}
-		}
-		game_mode();
-	}
-	//exit(0);
-}
 
 void game_start_screen() {
 	int i;   char buf;
@@ -192,18 +212,19 @@ void game_mode(){
 
 		setup_game();
 
-		int count_down_id = pthread_create(&p_thread[id], NULL, count_function, (void*)id);
-		id++;
+		int count_down_id = pthread_create(&p_thread, NULL, count_function, NULL);
+		
 
 		while(start_game() == TRUE){}
 
 		// user enter q & time over x
 		if(enter){
-			pthread_cancel(p_thread[id-1]);
+			pthread_cancel(p_thread);
 			fnd_clear();
 			dot_clear();
 			sel.game = 1;
 		}
+
 		return;
 
 	}else{
