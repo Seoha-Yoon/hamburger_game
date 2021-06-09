@@ -143,7 +143,7 @@ truth_t logic(){
 void game_start_screen() {
 	int i;   char buf;
 
-	led_start();
+	led_clear();
 	dot_clear();
 	fnd_clear();
 	clcd_clear_display();
@@ -153,7 +153,7 @@ void game_start_screen() {
 	}else if(level>5){
 		clcd_write_string("CONGRATS! RESTART: S");
 	}else{
-		clcd_write_string("Welcome to       Hamburger World");
+		clcd_write_string("Welcome to      Hamburger World");
 	}
 	
 
@@ -228,7 +228,7 @@ void game_mode(){
 
 // show hamburger display
 void setup_game(){
-	led_up_shift(level);
+	led_level(level);
 	clcd_clear_display();
 	clcd_write_string("Ready?");
 	usleep(1000000);
@@ -237,14 +237,14 @@ void setup_game(){
 	dot_display(sol[level-1]);
 
 	clcd_clear_display();
-	clcd_write_string("1.BR 2.LET       3.TMT 4.CHZ 5.PAT");
+	clcd_write_string("1.BR 2.LET      3.TMT 4.CHZ 5.PAT");
 }
 
 
 // for check user input
 void right () {
 	clcd_clear_display();
-	clcd_write_string("You're right!       LEVEL UP");
+	clcd_write_string("You're right!      LEVEL UP");
 	if(level <= 5) {
 		level++;
 		usleep(1000000);

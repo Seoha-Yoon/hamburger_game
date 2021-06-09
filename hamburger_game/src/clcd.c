@@ -67,7 +67,7 @@ void clcd_write_string(char str[]) {
 	int i, j;
 	for( i=0; (str[i] != 0); i++) {
 		clcd_write_data(str[i]);
-		if(i>16){
+		if(i>=16){
 			clcd_set_DDRAM(0x40);
 			for(j=i; (str[j] != 0); j++){
 				clcd_write_data(str[j]);

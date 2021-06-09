@@ -11,8 +11,6 @@ void init_keypad(short * address_out, short * address_in) ;
 int keypad_read(int * key_value);
 int keyboard_read(int * key_value);
 int input_check(int key_count, int * key_value);
-
-
-
+char getch(void);
 
 #endif

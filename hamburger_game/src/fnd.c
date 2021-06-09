@@ -36,28 +36,8 @@ void fnd_clear() {
 	}
 }
 
-void fnd_all() {
-	int i;
-	for(i=0; i<MAX_FND; i++){
-		*fnd[i] = 0xFF;
-	}
-}
-
 void fnd_write(int hexadecimal, int fnd_num) {
 	*fnd[fnd_num] = fnd_hexadecimal[hexadecimal];
-}
-
-void fnd_hexa_number(unsigned long number) {
-	int i;
-	for(i=0; i<MAX_FND; i++){
-		fnd_write( (short)(number & 0xF), i);
-		number = number >> 4;
-	}
-}
-
-int fnd_check(){
-	if(*fnd[0] ==0 && *fnd[1]==0) return 1;
-	else return 0;
 }
 
 void count_down() {
