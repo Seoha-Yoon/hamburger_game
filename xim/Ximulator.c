@@ -57,7 +57,7 @@ static unsigned long fnd_data[8];
 
 static unsigned long dots_data[5] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 static unsigned long led_data = 0;
-static unsigned long dots_type = 0;
+static unsigned long dots_type = 999;
 
 static unsigned long keypad_out =0;
 static unsigned long keypad_in = 0;
@@ -269,7 +269,7 @@ static void sim_dots_view() {
 			strcat(color,"\033[1;43;33m@\033[0m");
 			break;
 		case 0x04:
-			strcat(color,"\033[1;41;30sm@\033[0m");
+			strcat(color,"\033[1;41;30m@\033[0m");
 			break;
 	}
 	puts("\t[ Dots ]\t[ LED ]");
@@ -278,7 +278,11 @@ static void sim_dots_view() {
 		fputs("\t ", stdout);
 		for(int j=0; j<5; j++) {
 			if( dots_data[j] & (0x40 >> i) ) {
-				printf("%s",color);
+				if(dots_type == 999){
+					putchar('@');
+				}else{
+					printf("%s",color);
+				}
 			}
 			else {
 				putchar('.');
@@ -289,7 +293,7 @@ static void sim_dots_view() {
 				putchar('.');
 			}
 			else {
-				printf("%s",color);
+				putchar('@');
 		}
 		putchar('\n');
 	}
@@ -408,7 +412,7 @@ void* __wrap_mmap(void *addr, size_t len, int prot, int flags, int fildes, off_t
 			else if( off == SIM_MMAP_SMM[16] ) { mem_map_address[16] = return_address;}
 			else if( off == SIM_MMAP_SMM[17] ) { mem_map_address[17] = return_address;}
 
-			else if( off == SIM_MMAP_SMM[18] ) { mem_map_address[19] = return_address = &dots_type; }
+			else if( off == SIM_MMAP_SMM[18] ) { mem_map_address[18] = return_address = &dots_type; }
 			else { 
 				printf("[Ximulator] :\nThe device [%#010x] is not supported.\n", (int)off); 
 				exit(-1);
@@ -417,12 +421,12 @@ void* __wrap_mmap(void *addr, size_t len, int prot, int flags, int fildes, off_t
 			return return_address;
 		}
 		else { 
-			puts("[Ximulator] :\nCan't map memory.\nPlease check mmap() options. wtf");
+			puts("[Ximulator] :\nCan't map memory.\nPlease check mmap() options.");
 			exit(-1);
 		}
 	}
 	else { 
-		puts("[Ximulator] :\nCan't map memory.\nPlease open() before mmap()."); 
+		puts("[Ximulator] :\nCan't map memory.\nPlease open() before mmap().(1)"); 
 		exit(-1);
 	}
 	return MAP_FAILED;
@@ -441,7 +445,7 @@ int __wrap_munmap(void *addr, size_t len){
 		}
 	}
 	
-	puts("[Ximulator] :\nCan't unmap memory.\nPlease mmap() before munmap()."); 
+	puts("[Ximulator] :\nCan't unmap memory.\nPlease mmap() before munmap().(2)"); 
 	exit(-1);
 }
 
