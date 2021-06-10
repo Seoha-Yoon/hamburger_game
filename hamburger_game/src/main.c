@@ -154,7 +154,7 @@ void game_start_screen() {
 	if(life<=0){
 		clcd_write_string("GAME OVER");
 	}else if(level>8){
-		clcd_write_string("CONGRATS! RESTART: S");
+		clcd_write_string("CONGRATS!       RESTART: s");
 	}else{
 		clcd_write_string("Welcome to      Hamburger World");
 	}
@@ -268,7 +268,7 @@ void wrong () {
 
 void wrong_input() {
 	clcd_clear_display();
-	clcd_write_string("Wrong input");
+	clcd_write_string("Invalid input");
 	usleep(1000000);
 
 }
@@ -304,8 +304,9 @@ truth_t start_game(){
 		}		
 	}
 	else{
-		wrong_input();
 		if(key_count >= 2) exit(0);
+		wrong_input();
+		
 		return FALSE;
 	}
 }
