@@ -28,18 +28,21 @@ static selection_t sel;
 
 // for check answer
 int call;
-int usr_input[5];
+int usr_input[8];
 
-int sol[5][5] = {	{0,4,0,-1,-1},
-					{0,4,1,0,-1},
-					{0,4,3,0,-1},
-					{0,3,4,2,0},
-					{0,4,1,2,0}
+int sol[8][8] = {	{0,4,0,-1,-1,-1,-1,-1}, //3
+					{0,4,1,0,-1,-1,-1,-1}, //4
+					{0,3,4,0,-1,-1,-1,-1}, //4
+					{0,3,4,1,0,-1,-1,-1}, //5
+					{0,4,1,2,0,-1,-1,-1}, //5
+					{0,4,3,2,1,0,-1,-1}, //6
+					{0,3,4,3,4,1,0,-1}, //7
+					{0,1,4,3,4,1,2,0}, //8
 				};
 
 truth_t dot_corr(int inp[], int sol[]) {
 	int i;	
-	for(i = 0; i < 5; i++) {
+	for(i = 0; i < 8; i++) {
 		if(inp[i] != sol[i]) {return FALSE; }
 	}
 	return TRUE;
@@ -150,7 +153,7 @@ void game_start_screen() {
 
 	if(life<=0){
 		clcd_write_string("GAME OVER");
-	}else if(level>5){
+	}else if(level>8){
 		clcd_write_string("CONGRATS! RESTART: S");
 	}else{
 		clcd_write_string("Welcome to      Hamburger World");
@@ -182,11 +185,11 @@ void game_mode(){
 		return;
 	}
 
-	if(level <=5){
+	if(level <=8){
 		life_count(life);
 
 		// initialize usr_input
-		for(int i=0; i<5; i++){
+		for(int i=0; i<8; i++){
 			usr_input[i] = -1;
 		}
 		call = 0;
@@ -244,11 +247,16 @@ void setup_game(){
 // for check user input
 void right () {
 	clcd_clear_display();
-	clcd_write_string("You're right!      LEVEL UP");
-	if(level <= 5) {
-		level++;
-		usleep(1000000);
-	}	
+	if(level<8){
+		clcd_write_string("You're right!      LEVEL UP");
+	}
+	else{
+		clcd_write_string("You're GENIUS");
+	}
+	
+	level++;
+	usleep(1000000);
+		
 }
 
 void wrong () {
@@ -262,6 +270,7 @@ void wrong_input() {
 	clcd_clear_display();
 	clcd_write_string("Wrong input");
 	usleep(1000000);
+
 }
 
 // get user input
@@ -271,13 +280,13 @@ truth_t start_game(){
 	key_count = keyboard_read(&key_value);
 	
 	if(input_check(key_count, &key_value)) {
-		if (call >=5 && key_value == 5){	
+		if (call >=8 && key_value == 5){	
 			enter = TRUE;		
 			if( dot_corr(usr_input, sol[level - 1]) ) {right();}
 			else{wrong();}
 			return FALSE;
 
-		} else if (call >=5 && key_value != 5) {
+		} else if (call >=8 && key_value != 5) {
 			wrong();
 			return FALSE;
 		}
@@ -294,6 +303,9 @@ truth_t start_game(){
 			return FALSE;
 		}		
 	}
-	else{wrong_input();
-		return FALSE;}
+	else{
+		wrong_input();
+		if(key_count >= 2) exit(0);
+		return FALSE;
+	}
 }

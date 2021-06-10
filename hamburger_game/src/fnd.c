@@ -41,11 +41,11 @@ void fnd_write(int hexadecimal, int fnd_num) {
 }
 
 void count_down() {
-	int i=9,j,k=2;
-	for(j=29; j>=0; j--){
+	int i=0,j,k=2;
+	for(j=20; j>=0; j--){
 			*fnd[0] = fnd_hexadecimal[i];
 			*fnd[1] = fnd_hexadecimal[k];
-			usleep(500000);
+			usleep(1000000);
 			i--;
 			if (i<0) {
 				i=9;

@@ -1,6 +1,6 @@
 CC := /usr/local/arm-linux-4.1.1/bin/arm-linux-gcc
 
-OUTPUT		= keypad
+OUTPUT		= game
 SRCS		= ./src/main.c \
 				./src/led.c\
 				./src/dot.c\
